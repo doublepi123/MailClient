@@ -1,5 +1,7 @@
 package cn.edu.ldu;
 
+import com.sun.mail.util.MailSSLSocketFactory;
+
 import java.io.IOException;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -23,6 +25,7 @@ import javax.swing.table.DefaultTableModel;
  */
 public class MainFrame extends javax.swing.JFrame {
 
+    private int Reva = 0;
     /**
      * Creates new form MainFrame
      */
@@ -131,7 +134,7 @@ public class MainFrame extends javax.swing.JFrame {
     private void mailTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_mailTableMouseClicked
         try {
             // TODO add your handling code here:
-            int row = ((JTable) evt.getSource()).rowAtPoint(evt.getPoint());
+            int row = Reva - ((JTable) evt.getSource()).rowAtPoint(evt.getPoint())-1;
             if(!messages[row].getFolder().isOpen()) //判断是否open   
                 messages[row].getFolder().open(Folder.READ_WRITE);
             String from=messages[row].getFrom()[0].toString();
@@ -164,7 +167,11 @@ public class MainFrame extends javax.swing.JFrame {
             // 创建一个有具体连接信息的Properties对象
             Properties props = new Properties();
             props.setProperty("mail.store.protocol", "pop3");
+            props.put("mail.smtp.ssl.enable", "true");
+            MailSSLSocketFactory sf = new MailSSLSocketFactory();
+            sf.setTrustAllHosts(true);
             props.setProperty("mail.pop3.host", pop3Addr);
+            props.put("mail.smtp.ssl.socketFactory", sf);
             // 使用Properties对象获得Session对象
             Session session = Session.getInstance(props);
             // 利用Session对象获得Store对象，并连接pop3服务器
@@ -176,7 +183,8 @@ public class MainFrame extends javax.swing.JFrame {
             // 获得邮件夹Folder内的所有邮件Message对象
             messages = folder.getMessages();
             int count = messages.length;
-            for (int i = 0; i < count; i++) {
+            Reva = count;
+            for (int i = count-1 ; i >= count-10; i--) {
                 //表格填充数据
                 String from=messages[i].getFrom()[0].toString();
                 String [] temp1=from.split("<",2);
@@ -195,7 +203,7 @@ public class MainFrame extends javax.swing.JFrame {
 
     public void getMailContent(Part part) throws Exception {   
         String contenttype = part.getContentType();   
-        int nameIndex = contenttype.indexOf("name");   
+        int nameIndex = contenttype.indexOf("name");
         boolean flag = false;   
         if (nameIndex != -1)   
             flag = true;   
@@ -206,7 +214,7 @@ public class MainFrame extends javax.swing.JFrame {
         } else if (part.isMimeType("multipart/*")) {   
             Multipart multipart = (Multipart) part.getContent();   
             int counts = multipart.getCount();   
-            for (int i = 0; i < counts; i++) {   
+            for (int i = 0; i < counts; i++) {
                 getMailContent(multipart.getBodyPart(i));   
             }   
         } else if (part.isMimeType("message/rfc822")) {   

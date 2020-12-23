@@ -27,6 +27,8 @@ public class SendFrame extends javax.swing.JFrame {
         this.pop3Host=pop3Host;
         String []temp=userAddr.split("@", 2);
         this.userName=temp[0];
+        this.txtToAddr.setText("多个地址用;分开");
+        this.txtFilename.setText("多个文件多次点击添加附件即可");
     }
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -155,15 +157,34 @@ public class SendFrame extends javax.swing.JFrame {
     private void btnSendMailActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSendMailActionPerformed
         // TODO add your handling code here:
         //发送邮件
-       SendMail sm = new SendMail(smtpHost,userAddr,this.txtToAddr.getText(),
-               file,fileName,userName,userPass,
-               this.txtSubject.getText(),this.txtDataArea.getText());
-       int r=sm.Send();
-       if(r==1)
-           JOptionPane.showMessageDialog(null, "邮件发送成功", 
+        String s = this.txtToAddr.getText();
+        int n = s.length();
+        int cnt = 0;
+        //利用字符串数组记录收件人集合，以";"为分割，允许最后一个人有分号或者无分号
+        String addrSet[] =  new String[50];
+        int last = 0;
+        for(int i = 0 ; i < n ; i++){
+            if(s.charAt(i) == ';'){
+                addrSet[cnt++] = s.substring(last,i);
+                last = i+1;
+            }
+        }
+        if(last != n){
+            addrSet[cnt++] = s.substring(last,n);
+        }
+        int r = 0,pp = 0;
+        for(int i = 0 ; i < cnt  ; i++) {
+            SendMail sm = new SendMail(smtpHost, userAddr, addrSet[i],
+                    file, fileName, userName, userPass,
+                    this.txtSubject.getText(), this.txtDataArea.getText());
+            r = sm.Send();
+        }
+       if(r==cnt)
+           JOptionPane.showMessageDialog(null, cnt+"封邮件发送成功",
                    "提示", JOptionPane.OK_CANCEL_OPTION);
        else
-           JOptionPane.showMessageDialog(null, "邮件发送失败", 
+           pp = cnt - r;
+           JOptionPane.showMessageDialog(null, r+"封邮件发送成功，"+pp+"封邮件发送失败",
                    "错误提示", JOptionPane.ERROR_MESSAGE);
        this.dispose();
        new MainFrame(userAddr,userPass,smtpHost,pop3Host).setVisible(true);
@@ -180,7 +201,8 @@ public class SendFrame extends javax.swing.JFrame {
             File f=fileChooser.getSelectedFile();
             fileName=fileChooser.getName(f);
             this.txtFilename.setText(fileName);
-            file=f.getAbsolutePath();
+            //每次在URL末尾加上；用来区分多个文件，并直接加在原来的字符串末端
+            file+=f.getAbsolutePath()+";";
        }
     }//GEN-LAST:event_btnFileActionPerformed
 

@@ -2,6 +2,8 @@
 package cn.edu.ldu;
 
 import javax.swing.JOptionPane;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 /**
  *
@@ -128,14 +130,46 @@ public class LoginUI extends javax.swing.JDialog {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
+    //检查服务器地址是否正确
+    private boolean urlcheck(String url) {
+        for(int i = 0 ; i < url.length() ; i++){
+            if(Character.isLetter(url.charAt(i)) || Character.isDigit(url.charAt(i)) || url.charAt(i) == '.') continue;
+            return false;
+        }
+        return true;
+    }
+    //检查邮箱地址格式是否正确
+    private boolean mailcheck(String url){
+        int at = 0;
+        for(int i = 0 ; i < url.length() ; i++){
+            if(url.charAt(i) == '@'){
+                at++;
+                continue;
+            }
+            if(Character.isLetter(url.charAt(i)) || Character.isDigit(url.charAt(i)) || url.charAt(i) == '.') continue;
+            return false;
+        }
+        if(at != 1) return false;
+        return true;
+    }
     private void btnLoginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLoginActionPerformed
         // TODO add your handling code here:
-        
         userAddr=txtUserName.getText();
         userPass=txtUserPass.getText();
         smtpAddr=txtSMTPaddr.getText();
         pop3Addr=txtPOP3addr.getText();
+        if(!mailcheck(userAddr)){
+            JOptionPane.showMessageDialog(null, "邮箱地址不正确", "错误提示", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        if(!urlcheck(smtpAddr)){
+            JOptionPane.showMessageDialog(null, "smtp地址不正确", "错误提示", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        if(!urlcheck(pop3Addr)){
+            JOptionPane.showMessageDialog(null, "pop3地址不正确", "错误提示", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
         if(userAddr.equalsIgnoreCase("") || userPass.equalsIgnoreCase("") || 
                 smtpAddr.equalsIgnoreCase("") || pop3Addr.equalsIgnoreCase("")
                 ||userAddr.equalsIgnoreCase(null) || userPass.equalsIgnoreCase(null) || 

@@ -68,15 +68,29 @@ public class SendMail {
             BodyPart contentPart = new MimeBodyPart();
             contentPart.setText(text);
             multipart.addBodyPart(contentPart);
+            //将附件字符串转入数组
+            int n = File.length();
+            String fileAddr[] = new String[50];
+            int cnt = 0;
+            int last = 0;
+            for(int i = 0 ; i < n ; i++){
+                if(File.charAt(i) == ';') {
+                    fileAddr[cnt++] = File.substring(last, i);
+                    last = i + 1;
+                }
+            }
             //添加附件
             if(!(File.equalsIgnoreCase("") || File.equalsIgnoreCase(null))){
-                BodyPart messageBodyPart = new MimeBodyPart();
-                DataSource source = new FileDataSource(File);
-                messageBodyPart.setDataHandler(new DataHandler(source));//添加附件的内容
-                //添加附件的标题
-                BASE64Encoder encoder = new BASE64Encoder();
-                messageBodyPart.setFileName("=?GBK?B?" + encoder.encode(fileName.getBytes()) + "?=");
-                multipart.addBodyPart(messageBodyPart);
+                for(int i = 0 ; i < cnt ; i++) {
+                    BodyPart messageBodyPart = new MimeBodyPart();
+                    DataSource source = new FileDataSource(fileAddr[i]);
+//                    System.out.println(fileAddr[i]+"HERE");
+                    messageBodyPart.setDataHandler(new DataHandler(source));//添加附件的内容
+                    //添加附件的标题
+                    BASE64Encoder encoder = new BASE64Encoder();
+                    messageBodyPart.setFileName("=?GBK?B?" + encoder.encode(fileName.getBytes()) + "?=");
+                    multipart.addBodyPart(messageBodyPart);
+                }
             }
             message.setContent(multipart);//将multipart对象放到message中
             message.saveChanges();//保存邮件
